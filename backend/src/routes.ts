@@ -1,0 +1,25 @@
+import { Router } from "express";
+import { CreateUserController } from "./controllers/user/CreateUserController"
+import { CreateTenantController } from "./controllers/tenant/CreateTenantController"
+import { AuthUserController } from "./controllers/user/AuthUserController"
+import { validateSchema } from "./middlewares/validateSchema";
+import { authUserSchema, createUserSchema } from "./schemas/userSchema";
+import { createTenantSchema } from "./schemas/createTenantSchema";
+import { DetailUserController } from "./controllers/user/DetailUserController";
+import { isAuthenticated } from "./middlewares/isAuthenticated";
+import { CreateProjectController } from "./controllers/project/CreateProjectController";
+import { createProjectSchema } from "./schemas/projectSchema";
+import { CreateTaskController } from "./controllers/task/CreateTaskController";
+import { createTaskSchema } from "./schemas/taskSchema";
+
+
+const router = Router();
+
+router.post("/users", validateSchema(createUserSchema), new CreateUserController().handle)
+router.post("/tenants", validateSchema(createTenantSchema),new CreateTenantController().handle);
+router.post("/session", validateSchema(authUserSchema), new AuthUserController().handle)
+router.get("/me", isAuthenticated, new DetailUserController().handle)   
+router.post("/projects", isAuthenticated, validateSchema(createProjectSchema), new CreateProjectController().handle)
+router.post("/tasks", isAuthenticated, validateSchema(createTaskSchema), new CreateTaskController().handle)
+
+export default router;
