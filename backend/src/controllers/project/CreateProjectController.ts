@@ -1,14 +1,13 @@
 import { Request, Response } from "express";
 import { CreateProjectService } from "../../services/project/CreateProjectService";
 
-interface AuthenticatedRequest extends Request {
-  userId?: string;
-}
-
 class CreateProjectController {
-  async handle(req: AuthenticatedRequest, res: Response) {
+  async handle(req: Request, res: Response) {
     const { name, description, tenantId } = req.body;
-    const createdById = req.userId;
+
+    console.log("Dados recebidos para criação de projeto:", { name, description, tenantId });
+    console.log("User ID do token:", req.user_id);
+    const createdById = req.user_id;
 
     if (!createdById) {
       return res.status(401).json({ error: "Usuário não autenticado" });

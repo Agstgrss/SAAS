@@ -18,8 +18,6 @@ export function isAuthenticated(
     });
   }
 
-  console.log(authToken);
-
   const [, token] = authToken.split(" ");
 
   try {
