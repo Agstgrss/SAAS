@@ -1,6 +1,6 @@
 # Contexto do Projeto
 
-Este documento fornece uma visão geral das rotas, serviços, entidades (tabelas) e outras partes chave da aplicação backend.
+Este documento fornece uma visão geral das rotas, serviços, entidades (tabelas) e outras partes chave da aplicação backend e frontend.
 
 ---
 
@@ -14,10 +14,34 @@ As rotas definidas em `backend/src/routes.ts` são:
 | POST   | `/tenants`  | não               | `createTenantSchema`       | Registrar nova empresa (tenant)               |
 | POST   | `/session`  | não               | `authUserSchema`           | Autenticar usuário e obter token              |
 | GET    | `/me`       | `isAuthenticated` | -                          | Detalhes do usuário autenticado               |
+| GET    | `/project`  | `isAuthenticated` | -                          | Listar projetos do usuário autenticado        |
 | POST   | `/projects` | `isAuthenticated` | `createProjectSchema`      | Criar projeto dentro da empresa               |
 | POST   | `/tasks`    | `isAuthenticated` | `createTaskSchema`         | Criar tarefa associada a projeto              |
 
 > **Nota:** Validações são feitas pelo middleware `validateSchema` usando os schemas do Zod localizados em `src/schemas`.
+
+---
+
+## 🎨 Frontend
+
+### Páginas Implementadas
+
+- **Login** (`/login`) - Página de autenticação do usuário
+- **Register** (`/register`) - Página de registro de novo usuário
+- **Dashboard** (`/dashboard`) - Painel principal com lista de projetos do usuário
+
+### Dashboard Page (`frontend/src/app/dashboard/page.tsx`)
+
+Componente cliente que:
+- Carrega dados do usuário atual via `getMe()` 
+- Lista projetos do usuário via `getProjects()` (consome GET `/project`)
+- Permite criar novo projeto via `createProject()`
+- Redireciona para `/login` se não autenticado
+
+**Estado gerenciado:**
+- `user` - Dados do usuário atual
+- `projects` - Lista de projetos (`Project[]`)
+- `newProjectName` - Campo de input para novo projeto
 
 ---
 
@@ -36,6 +60,7 @@ Abaixo um resumo das responsabilidades:
 
 - **Project**
   - `CreateProjectService` – cria projeto ligado a um tenant e usuário criador.
+  - `ListProjectService` – lista projetos do usuário autenticado.
 
 - **Task**
   - `CreateTaskService` – cria tarefa atrelada a projeto e tenant; opcionalmente atribui usuário.
@@ -104,13 +129,24 @@ backend/
     prisma/           # inicializa Prisma Client
     routes.ts         # roteamento Express
     app.ts / server.ts# configuração e inicialização do servidor
+  prisma/
+    schema.prisma     # modelos Prisma
+    migrations/       # histórico de migrations
+
+frontend/
+  src/
+    app/              # páginas e layout
+    components/       # componentes reutilizáveis
+    services/         # chamadas HTTP para backend
+    hooks/            # hooks customizados
+    contexts/         # contextos React
 ```
 
 ---
 
 > Este documento serve como referência rápida para desenvolvedores que transitam pelo código,
-> mostrando as ligações principais entre rotas, serviços e dados.
+> mostrando as ligações principais entre rotas, serviços, dados e interface.
 
 ---
 
-*Gerado automaticamente em fevereiro de 2026.*
+*Última atualização: Fevereiro de 2026 - Adicionado Frontend (páginas de Login, Register, Dashboard) e rota GET `/project`*

@@ -11,9 +11,6 @@ export const createTaskSchema = z.object({
     projectId: z
       .string({ message: "O projeto é obrigatório" })
       .min(1, { message: "O projeto é obrigatório" }),
-    tenantId: z
-      .string({ message: "O tenant é obrigatório" })
-      .min(1, { message: "O tenant é obrigatório" }),
     status: z
       .enum(["TODO", "DOING", "DONE"])
       .optional(),
