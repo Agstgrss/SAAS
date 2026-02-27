@@ -11,7 +11,7 @@ import { CreateProjectController } from "./controllers/project/CreateProjectCont
 import { createProjectSchema } from "./schemas/projectSchema";
 import { CreateTaskController } from "./controllers/task/CreateTaskController";
 import { createTaskSchema } from "./schemas/taskSchema";
-
+import { ListProjectsController } from "./controllers/project/ListProjectsController";
 
 const router = Router();
 
@@ -21,5 +21,7 @@ router.post("/session", validateSchema(authUserSchema), new AuthUserController()
 router.get("/me", isAuthenticated, new DetailUserController().handle)   
 router.post("/projects", isAuthenticated, validateSchema(createProjectSchema), new CreateProjectController().handle)
 router.post("/tasks", isAuthenticated, validateSchema(createTaskSchema), new CreateTaskController().handle)
+router.get("/projects", isAuthenticated, new ListProjectsController().handle);
+
 
 export default router;

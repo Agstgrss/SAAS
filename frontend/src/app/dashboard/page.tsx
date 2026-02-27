@@ -1,30 +1,55 @@
-// src/app/dashboard/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { getMe } from "@/services/auth";
 import { useRouter } from "next/navigation";
+import { getMe } from "@/services/auth";
+import {
+  getProjects,
+  createProject,
+  Project,
+} from "@/services/projects";
 
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null);
   const router = useRouter();
 
+  const [user, setUser] = useState<any>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [newProjectName, setNewProjectName] = useState("");
+
   useEffect(() => {
-    async function loadUser() {
+    async function load() {
       try {
-        const data = await getMe();
-        setUser(data);
+        const me = await getMe();
+        setUser(me);
+
+        const projectList = await getProjects();
+        setProjects(projectList);
       } catch {
-        router.push("/login");
+        router.replace("/login");
       }
     }
 
-    loadUser();
+    load();
   }, []);
+
+  async function handleCreateProject() {
+    if (!newProjectName) return;
+
+    try {
+      const project = await createProject({
+        name: newProjectName,
+      });
+
+      setProjects((prev) => [...prev, project]);
+      setNewProjectName("");
+    } catch (err: any) {
+      alert(err.message);
+    }
+  }
 
   function handleLogout() {
     localStorage.removeItem("token");
-    router.push("/login");
+    router.replace("/login");
   }
 
   return (
@@ -34,13 +59,34 @@ export default function Dashboard() {
       {user && (
         <>
           <p>Bem-vindo, {user.name}</p>
-          <p>Email: {user.email}</p>
+          <button onClick={handleLogout}>Sair</button>
         </>
       )}
 
-      <br />
+      <hr />
 
-      <button onClick={handleLogout}>Sair</button>
+      <h2>Seus Projetos</h2>
+
+      <input
+        placeholder="Nome do projeto"
+        value={newProjectName}
+        onChange={(e) => setNewProjectName(e.target.value)}
+      />
+      <button onClick={handleCreateProject}>
+        Criar Projeto
+      </button>
+
+      <ul>
+        {projects.map((project) => (
+          <li
+            key={project.id}
+            style={{ cursor: "pointer", marginTop: 10 }}
+            onClick={() => router.push(`/projects/${project.id}`)}
+          >
+            {project.name}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
