@@ -21,7 +21,6 @@ export default function ProjectBoard() {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-  // 🔹 Navegação
   function handleBackToDashboard() {
     router.push("/dashboard");
   }
@@ -31,7 +30,6 @@ export default function ProjectBoard() {
     router.replace("/");
   }
 
-  // 🔹 Carrega tarefas
   useEffect(() => {
     async function load() {
       try {
@@ -40,8 +38,7 @@ export default function ProjectBoard() {
           { method: "GET" }
         );
         setTasks(data);
-      } catch (err) {
-        console.error(err);
+      } catch {
         router.replace("/dashboard");
       }
     }
@@ -49,7 +46,6 @@ export default function ProjectBoard() {
     if (id) load();
   }, [id, router]);
 
-  // 🔹 Criar nova tarefa
   async function handleCreateTask() {
     if (!newTaskTitle) return;
 
@@ -65,19 +61,20 @@ export default function ProjectBoard() {
 
       setTasks((prev) => [task, ...prev]);
       setNewTaskTitle("");
+
+      // 🔥 abre o modal automaticamente
+      setSelectedTask(task);
     } catch (err: any) {
       alert(err.message || "Erro ao criar tarefa");
     }
   }
 
-  // 🔹 Separação por coluna
   const todo = tasks.filter((t) => t.status === "TODO");
   const doing = tasks.filter((t) => t.status === "DOING");
   const done = tasks.filter((t) => t.status === "DONE");
 
   return (
     <div style={{ padding: 20 }}>
-      {/* 🔥 Header com navegação */}
       <div
         style={{
           display: "flex",
@@ -89,55 +86,35 @@ export default function ProjectBoard() {
         <h1 style={{ margin: 0 }}>Scrum Board</h1>
 
         <div style={{ display: "flex", gap: 10 }}>
-          <button
-            onClick={handleBackToDashboard}
-            style={{
-              padding: "6px 12px",
-              borderRadius: 4,
-              border: "1px solid #ccc",
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={handleBackToDashboard}>
             ← Dashboard
           </button>
-
           <button
             onClick={handleLogout}
-            style={{
-              padding: "6px 12px",
-              borderRadius: 4,
-              border: "none",
-              background: "#ff4d4f",
-              color: "white",
-              cursor: "pointer",
-            }}
+            style={{ background: "#ff4d4f", color: "white" }}
           >
             Sair
           </button>
         </div>
       </div>
 
-      {/* Criar tarefa */}
       <div style={{ marginBottom: 20 }}>
         <input
           value={newTaskTitle}
           onChange={(e) => setNewTaskTitle(e.target.value)}
           placeholder="Nova tarefa"
-          style={{ padding: 8, marginRight: 10 }}
         />
         <button onClick={handleCreateTask}>
           Criar
         </button>
       </div>
 
-      {/* Colunas */}
       <div style={{ display: "flex", gap: 20 }}>
         <Column title="TODO" tasks={todo} onTaskClick={setSelectedTask} />
         <Column title="DOING" tasks={doing} onTaskClick={setSelectedTask} />
         <Column title="DONE" tasks={done} onTaskClick={setSelectedTask} />
       </div>
 
-      {/* Modal */}
       {selectedTask && (
         <TaskModal
           task={selectedTask}
@@ -168,15 +145,7 @@ function Column({
   onTaskClick: (task: Task) => void;
 }) {
   return (
-    <div
-      style={{
-        flex: 1,
-        background: "#f4f4f4",
-        padding: 15,
-        borderRadius: 8,
-        minHeight: 400,
-      }}
-    >
+    <div style={{ flex: 1, background: "#f4f4f4", padding: 15 }}>
       <h2>{title}</h2>
 
       {tasks.map((task) => (
@@ -187,8 +156,6 @@ function Column({
             background: "white",
             padding: 10,
             marginBottom: 10,
-            borderRadius: 6,
-            boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
             cursor: "pointer",
           }}
         >
@@ -210,34 +177,41 @@ function TaskModal({
   onUpdate: (updatedTask: Task) => void;
   onDelete: (taskId: string) => void;
 }) {
+  const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description || "");
   const [status, setStatus] = useState<Task["status"]>(task.status);
+  const [dueDate, setDueDate] = useState(
+    task.dueDate ? task.dueDate.split("T")[0] : ""
+  );
+
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  async function handleStatusChange(newStatus: Task["status"]) {
-    if (newStatus === status) return;
-
-    setStatus(newStatus);
+  async function handleSave() {
     setSaving(true);
 
     try {
       const updated: Task = await apiRequest(`/tasks/${task.id}`, {
         method: "PUT",
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({
+          title,
+          description,
+          status,
+          dueDate: dueDate || null,
+        }),
       });
 
       onUpdate(updated);
+      alert("Tarefa atualizada com sucesso!");
     } catch {
-      alert("Erro ao atualizar status");
-      setStatus(task.status);
+      alert("Erro ao salvar");
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete() {
-    const confirmDelete = confirm("Tem certeza que deseja excluir essa tarefa?");
-    if (!confirmDelete) return;
+    if (!confirm("Tem certeza que deseja excluir?")) return;
 
     setDeleting(true);
 
@@ -249,7 +223,7 @@ function TaskModal({
       onDelete(task.id);
       onClose();
     } catch {
-      alert("Erro ao excluir tarefa");
+      alert("Erro ao excluir");
     } finally {
       setDeleting(false);
     }
@@ -262,61 +236,54 @@ function TaskModal({
           X
         </button>
 
-        <h2 style={{ marginTop: 0 }}>{task.title}</h2>
+        <h2>Editar Tarefa</h2>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <div>
-            <label style={{ marginRight: 8, fontSize: 14 }}>Status:</label>
-            <select
-              value={status}
-              onChange={(e) =>
-                handleStatusChange(e.target.value as Task["status"])
-              }
-              disabled={saving}
-            >
-              <option value="TODO">TODO</option>
-              <option value="DOING">DOING</option>
-              <option value="DONE">DONE</option>
-            </select>
-            {saving && (
-              <span style={{ marginLeft: 8, fontSize: 12 }}>
-                Salvando...
-              </span>
-            )}
-          </div>
+        <label>Título</label>
+        <input value={title} onChange={(e) => setTitle(e.target.value)} />
 
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            style={{
-              background: "#ff4d4f",
-              color: "white",
-              border: "none",
-              padding: "6px 10px",
-              borderRadius: 4,
-              cursor: "pointer",
-            }}
-          >
-            {deleting ? "Excluindo..." : "Excluir"}
-          </button>
-        </div>
+        <label>Descrição</label>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
 
-        <p>
-          <strong>Descrição:</strong><br />
-          {task.description || "Sem descrição"}
-        </p>
+        <label>Status</label>
+        <select
+          value={status}
+          onChange={(e) =>
+            setStatus(e.target.value as Task["status"])
+          }
+        >
+          <option value="TODO">TODO</option>
+          <option value="DOING">DOING</option>
+          <option value="DONE">DONE</option>
+        </select>
 
-        <p>
-          <strong>Prazo:</strong>{" "}
-          {task.dueDate
-            ? new Date(task.dueDate).toLocaleDateString()
-            : "Sem prazo"}
-        </p>
+        <label>Prazo</label>
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+        />
 
         <p>
           <strong>Criado em:</strong>{" "}
           {new Date(task.createdAt).toLocaleString()}
         </p>
+
+        <div style={{ marginTop: 15, display: "flex", gap: 10 }}>
+          <button onClick={handleSave} disabled={saving}>
+            {saving ? "Salvando..." : "Salvar"}
+          </button>
+
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            style={{ background: "#ff4d4f", color: "white" }}
+          >
+            {deleting ? "Excluindo..." : "Excluir"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -339,10 +306,9 @@ const modalStyle: React.CSSProperties = {
   background: "#fff",
   padding: 24,
   borderRadius: 8,
-  width: 420,
+  width: 450,
   maxWidth: "90vw",
   position: "relative",
-  boxShadow: "0 8px 30px rgba(0,0,0,0.2)",
 };
 
 const closeStyle: React.CSSProperties = {

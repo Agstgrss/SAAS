@@ -15,22 +15,31 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [newProjectName, setNewProjectName] = useState("");
+  const [newProjectDescription, setNewProjectDescription] = useState("");
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const me = await getMe();
-        setUser(me);
-
-        const projectList = await getProjects();
-        setProjects(projectList);
-      } catch {
-        router.replace("/login");
-      }
+useEffect(() => {
+  async function load() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.log("Token ausente, redirecionando para login");
+      router.replace("/login");
+      return;
     }
 
-    load();
-  }, []);
+    try {
+      const me = await getMe();
+      setUser(me);
+      const projectList = await getProjects();
+      setProjects(projectList);
+    } catch (err: any) {
+      console.error("Erro no load do dashboard:", err.message);
+      localStorage.removeItem("token");
+      router.replace("/login");
+    }
+  }
+
+  load();
+}, [router]);
 
   async function handleCreateProject() {
     if (!newProjectName) return;
@@ -38,12 +47,15 @@ export default function Dashboard() {
     try {
       const project = await createProject({
         name: newProjectName,
+        description: newProjectDescription,
       });
 
       setProjects((prev) => [...prev, project]);
+
       setNewProjectName("");
+      setNewProjectDescription("");
     } catch (err: any) {
-      alert(err.message);
+      alert(err.message || "Erro ao criar projeto");
     }
   }
 
@@ -53,7 +65,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div>
+    <div style={{ padding: 30 }}>
       <h1>Dashboard</h1>
 
       {user && (
@@ -63,30 +75,49 @@ export default function Dashboard() {
         </>
       )}
 
-      <hr />
+      <hr style={{ margin: "20px 0" }} />
 
       <h2>Seus Projetos</h2>
 
-      <input
-        placeholder="Nome do projeto"
-        value={newProjectName}
-        onChange={(e) => setNewProjectName(e.target.value)}
-      />
-      <button onClick={handleCreateProject}>
-        Criar Projeto
-      </button>
+      <div style={{ marginBottom: 20 }}>
+        <input
+          placeholder="Nome do projeto"
+          value={newProjectName}
+          onChange={(e) => setNewProjectName(e.target.value)}
+          style={{ display: "block", marginBottom: 10 }}
+        />
 
-      <ul>
+        <textarea
+          placeholder="Descrição do projeto"
+          value={newProjectDescription}
+          onChange={(e) => setNewProjectDescription(e.target.value)}
+          style={{ display: "block", marginBottom: 10 }}
+        />
+
+        <button onClick={handleCreateProject}>
+          Criar Projeto
+        </button>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
         {projects.map((project) => (
-          <li
+          <div
             key={project.id}
-            style={{ cursor: "pointer", marginTop: 10 }}
             onClick={() => router.push(`/projects/${project.id}`)}
+            style={{
+              padding: 15,
+              border: "1px solid #ddd",
+              borderRadius: 6,
+              cursor: "pointer",
+            }}
           >
-            {project.name}
-          </li>
+            <h3 style={{ margin: 0 }}>{project.name}</h3>
+            <p style={{ margin: "5px 0 0 0", color: "#666" }}>
+              {project.description || "Sem descrição"}
+            </p>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
