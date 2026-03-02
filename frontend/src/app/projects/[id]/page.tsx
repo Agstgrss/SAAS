@@ -30,21 +30,35 @@ export default function ProjectBoard() {
     router.replace("/");
   }
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await apiRequest(
-          `/tasks?projectId=${id}`,
-          { method: "GET" }
-        );
-        setTasks(data);
-      } catch {
-        router.replace("/dashboard");
-      }
-    }
+useEffect(() => {
+  async function load() {
+    try {
+      const projects = await apiRequest("/projects", {
+        method: "GET",
+      });
 
-    if (id) load();
-  }, [id, router]);
+      const projectExists = projects.some(
+        (project: any) => project.id === id
+      );
+
+      if (!projectExists) {
+        router.replace("/projects/project-not-found");
+        return;
+      }
+
+      const data = await apiRequest(
+        `/tasks?projectId=${id}`,
+        { method: "GET" }
+      );
+
+      setTasks(data);
+    } catch {
+      router.replace("/dashboard");
+    }
+  }
+
+  if (id) load();
+}, [id, router]);
 
   async function handleCreateTask() {
     if (!newTaskTitle) return;
