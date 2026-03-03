@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 export const metadata = {
   title: "SaaS Scrum",
-  description: "Sistema Scrum estilo Jira",
+  description: "Sistema Scrum estilo Jira - Gerenciamento de Projetos Ágil",
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body style={{ fontFamily: "Arial", padding: 20 }}>
+      <body>
         {children}
       </body>
     </html>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { registerUser } from "@/services/auth";
+import { FormCard, FormField, PageWrapper, Container, Alert } from "@/components/layout";
 
 export default function Register() {
   const router = useRouter();
@@ -12,9 +13,13 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [tenantId, setTenantId] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     try {
       await registerUser({
@@ -24,55 +29,91 @@ export default function Register() {
         tenantId,
       });
 
-      alert("Usuário criado!");
       router.push("/login");
     } catch (err: any) {
-      alert(err.message);
+      setError(err.message || "Erro ao criar conta");
+    } finally {
+      setIsLoading(false);
     }
   }
 
   return (
-    <div>
-      <h1>Registrar</h1>
+    <PageWrapper>
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        padding: "var(--spacing-4)",
+        backgroundColor: "var(--color-gray-50)",
+      }}>
+        <Container size="sm">
+          <FormCard
+            title="Criar Conta"
+            subtitle="Preencha os dados abaixo para se registrar"
+            onSubmit={handleRegister}
+            submitButtonText="Registrar"
+            isLoading={isLoading}
+          >
+            {error && (
+              <Alert
+                type="error"
+                message={error}
+                onClose={() => setError("")}
+              />
+            )}
 
-      <form onSubmit={handleRegister}>
-        <input
-          placeholder="Nome"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <br /><br />
+            <FormField label="Nome" required>
+              <input
+                type="text"
+                placeholder="Seu nome completo"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </FormField>
 
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <br /><br />
+            <FormField label="Email" required>
+              <input
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </FormField>
 
-        <input
-          placeholder="Senha"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <br /><br />
+            <FormField label="Senha" required>
+              <input
+                type="password"
+                placeholder="Mínimo 6 caracteres"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </FormField>
 
-        <input
-          placeholder="Tenant ID"
-          value={tenantId}
-          onChange={(e) => setTenantId(e.target.value)}
-        />
-        <br /><br />
+            <FormField label="ID do Tenant" required>
+              <input
+                type="text"
+                placeholder="Identificador único da sua organização"
+                value={tenantId}
+                onChange={(e) => setTenantId(e.target.value)}
+                required
+              />
+            </FormField>
 
-        <button type="submit">Registrar</button>
-      </form>
-
-      <br />
-
-      <Link href="/login">
-        <button>Ir para Login</button>
-      </Link>
-    </div>
+            <div style={{ marginTop: "var(--spacing-6)" }}>
+              <p style={{ textAlign: "center", marginBottom: "var(--spacing-4)" }}>
+                Já possui conta?{" "}
+                <Link href="/login" style={{ fontWeight: "var(--font-weight-semibold)" }}>
+                  Fazer login
+                </Link>
+              </p>
+            </div>
+          </FormCard>
+        </Container>
+      </div>
+    </PageWrapper>
   );
 }
