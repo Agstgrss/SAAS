@@ -13,6 +13,8 @@ npm-debug.log*
 
 # Variáveis de ambiente
 .env
+.env.local
+.env.docekr
 
 # Arquivos do sistema
 .DS_Store
