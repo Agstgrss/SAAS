@@ -5,10 +5,8 @@ services:
     image: postgres:15
     container_name: saas_db
     restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: as45sd56
-      POSTGRES_DB: saas_db
+    env_file:
+    - ./backend/.env.docker
     ports:
       - "5433:5432"
     volumes:
