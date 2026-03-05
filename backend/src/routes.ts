@@ -11,7 +11,10 @@ import { CreateProjectController } from "./controllers/project/CreateProjectCont
 import { createProjectSchema } from "./schemas/projectSchema";
 import { CreateTaskController } from "./controllers/task/CreateTaskController";
 import { createTaskSchema } from "./schemas/taskSchema";
-
+import { ListProjectsController } from "./controllers/project/ListProjectsController";
+import { ListTasksController } from "./controllers/task//ListTaskController";
+import { UpdateTaskController } from "./controllers/task/UpdateTaskController";
+import { DeleteTaskController } from "./controllers/task/DeleteTaskController";
 
 const router = Router();
 
@@ -20,6 +23,11 @@ router.post("/tenants", validateSchema(createTenantSchema),new CreateTenantContr
 router.post("/session", validateSchema(authUserSchema), new AuthUserController().handle)
 router.get("/me", isAuthenticated, new DetailUserController().handle)   
 router.post("/projects", isAuthenticated, validateSchema(createProjectSchema), new CreateProjectController().handle)
+router.get("/projects", isAuthenticated, new ListProjectsController().handle);
+router.get("/tasks", isAuthenticated,new ListTasksController().handle);
 router.post("/tasks", isAuthenticated, validateSchema(createTaskSchema), new CreateTaskController().handle)
+router.put("/tasks/:id", isAuthenticated, new UpdateTaskController().handle);
+router.delete("/tasks/:id", isAuthenticated, new DeleteTaskController().handle);
+
 
 export default router;

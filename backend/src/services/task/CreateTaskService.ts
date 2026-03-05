@@ -1,10 +1,10 @@
 import prismaClient from "../../prisma";
 
 interface CreateTaskProps {
+  userId: string; // 🔥 agora vem do token
   title: string;
   description?: string;
   projectId: string;
-  tenantId: string;
   status?: "TODO" | "DOING" | "DONE";
   assignedToId?: string;
   dueDate?: string;
@@ -12,26 +12,27 @@ interface CreateTaskProps {
 
 class CreateTaskService {
   async execute({
+    userId,
     title,
     description,
     projectId,
-    tenantId,
     status = "TODO",
     assignedToId,
     dueDate,
   }: CreateTaskProps) {
-    // Verificar se o tenant existe
-    const tenantExists = await prismaClient.tenant.findUnique({
-      where: {
-        id: tenantId,
-      },
+
+    // 🔹 Buscar usuário autenticado
+    const user = await prismaClient.user.findUnique({
+      where: { id: userId },
     });
 
-    if (!tenantExists) {
-      throw new Error("Tenant não encontrado!");
+    if (!user) {
+      throw new Error("Usuário não encontrado!");
     }
 
-    // Verificar se o projeto existe e pertence ao tenant
+    const tenantId = user.tenantId;
+
+    // 🔹 Verificar se o projeto pertence ao tenant
     const projectExists = await prismaClient.project.findFirst({
       where: {
         id: projectId,
@@ -43,7 +44,7 @@ class CreateTaskService {
       throw new Error("Projeto não encontrado no tenant!");
     }
 
-    // Verificar se o usuário atribuído existe (se fornecido)
+    // 🔹 Verificar se o usuário atribuído existe (se fornecido)
     if (assignedToId) {
       const userExists = await prismaClient.user.findFirst({
         where: {
@@ -57,7 +58,7 @@ class CreateTaskService {
       }
     }
 
-    // Criar a tarefa
+    // 🔹 Criar tarefa
     const task = await prismaClient.task.create({
       data: {
         title,

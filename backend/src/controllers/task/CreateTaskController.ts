@@ -6,16 +6,18 @@ interface AuthenticatedRequest extends Request {
 }
 
 class CreateTaskController {
-  async handle(req: AuthenticatedRequest, res: Response) {
-    const { title, description, projectId, tenantId, status, assignedToId, dueDate } = req.body;
+  async handle(req: any, res: Response) {
+    const userId = req.user_id;
+
+    const { title, description, projectId, status, assignedToId, dueDate } = req.body;
 
     const service = new CreateTaskService();
 
     const task = await service.execute({
+      userId,
       title,
       description,
       projectId,
-      tenantId,
       status,
       assignedToId,
       dueDate,

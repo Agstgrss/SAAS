@@ -8,8 +8,5 @@ export const createProjectSchema = z.object({
     description: z
       .string()
       .optional(),
-    tenantId: z
-      .string({ message: "O tenant é obrigatório" })
-      .min(1, { message: "O tenant é obrigatório" }),
   }),
 });
