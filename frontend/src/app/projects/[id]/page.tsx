@@ -21,10 +21,9 @@ export default function ProjectBoard() {
 
   const [projectName, setProjectName] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [newTaskTitle, setNewTaskTitle] = useState("");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [error, setError] = useState("");
-  const [isLoadingTask, setIsLoadingTask] = useState(false);
 
   function handleBackToDashboard() {
     router.push("/dashboard");
@@ -68,29 +67,7 @@ export default function ProjectBoard() {
   }, [id, router]);
 
   async function handleCreateTask() {
-    if (!newTaskTitle) return;
-
-    setError("");
-    setIsLoadingTask(true);
-
-    try {
-      const task: Task = await apiRequest("/tasks", {
-        method: "POST",
-        body: JSON.stringify({
-          title: newTaskTitle,
-          projectId: id,
-          status: "TODO",
-        }),
-      });
-
-      setTasks((prev) => [task, ...prev]);
-      setNewTaskTitle("");
-      setSelectedTask(task);
-    } catch (err: any) {
-      setError(err.message || "Erro ao criar tarefa");
-    } finally {
-      setIsLoadingTask(false);
-    }
+    setIsCreatingTask(true);
   }
 
   const todo = tasks.filter((t) => t.status === "TODO");
@@ -124,27 +101,11 @@ export default function ProjectBoard() {
             />
           )}
 
-          <Card
-            title="Nova Tarefa"
-            subtitle="Crie uma nova tarefa para este projeto"
-          >
-            <div style={{ display: "flex", gap: "var(--spacing-3)" }}>
-              <input
-                type="text"
-                value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
-                placeholder="Título da tarefa"
-                style={{ flex: 1 }}
-              />
-              <Button
-                onClick={handleCreateTask}
-                isLoading={isLoadingTask}
-                style={{ alignSelf: "flex-start" }}
-              >
-                Criar
-              </Button>
-            </div>
-          </Card>
+          <div style={{ marginBottom: "var(--spacing-6)" }}>
+            <Button onClick={handleCreateTask}>
+              + Nova Tarefa
+            </Button>
+          </div>
 
           <div style={{ marginTop: "var(--spacing-8)" }}>
             <h2>Tarefas</h2>
@@ -161,6 +122,17 @@ export default function ProjectBoard() {
           </div>
         </Container>
       </div>
+
+      {isCreatingTask && (
+        <CreateTaskModal
+          projectId={id as string}
+          onClose={() => setIsCreatingTask(false)}
+          onTaskCreated={(newTask: Task) => {
+            setTasks((prev) => [newTask, ...prev]);
+            setIsCreatingTask(false);
+          }}
+        />
+      )}
 
       {selectedTask && (
         <TaskModal
@@ -179,6 +151,145 @@ export default function ProjectBoard() {
         />
       )}
     </PageWrapper>
+  );
+}
+
+function CreateTaskModal({
+  projectId,
+  onClose,
+  onTaskCreated,
+}: {
+  projectId: string;
+  onClose: () => void;
+  onTaskCreated: (task: Task) => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState<Task["status"]>("TODO");
+  const [dueDate, setDueDate] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSave() {
+    if (!title.trim()) {
+      setError("Título é obrigatório");
+      return;
+    }
+
+    if (!dueDate) {
+      setError("Data de vencimento é obrigatória");
+      return;
+    }
+
+    // Criar data em UTC para evitar problemas de timezone
+    const [year, month, day] = dueDate.split('-');
+    const selectedDate = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
+    const today = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
+
+    if (selectedDate < today) {
+      setError("A data de vencimento não pode ser menor que hoje");
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+
+    try {
+      const body: any = {
+        title,
+        description,
+        projectId,
+        status,
+        dueDate: new Date(dueDate + "T00:00:00Z").toISOString(),
+      };
+
+      const newTask: Task = await apiRequest("/tasks", {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+
+      onTaskCreated(newTask);
+      onClose();
+    } catch (err: any) {
+      setError(err.message || "Erro ao criar tarefa");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Nova Tarefa</h2>
+          <button className="modal-close" onClick={onClose}>
+            ✕
+          </button>
+        </div>
+
+        <div className="modal-body">
+          {error && (
+            <Alert
+              type="error"
+              message={error}
+              onClose={() => setError("")}
+            />
+          )}
+
+          <FormField label="Título" required>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Título da tarefa"
+            />
+          </FormField>
+
+          <FormField label="Descrição">
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Descrição da tarefa (opcional)"
+            />
+          </FormField>
+
+          <FormField label="Status" required>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as Task["status"])}
+            >
+              <option value="TODO">📋 TODO</option>
+              <option value="DOING">⚙️ DOING</option>
+              <option value="DONE">✅ DONE</option>
+            </select>
+          </FormField>
+
+          <FormField label="Prazo (Data)">
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
+          </FormField>
+        </div>
+
+        <div className="modal-footer">
+          <Button
+            variant="outline"
+            onClick={onClose}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            isLoading={saving}
+          >
+            Salvar
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -280,6 +391,21 @@ function TaskModal({
   const [error, setError] = useState("");
 
   async function handleSave() {
+    if (!dueDate) {
+      setError("Data de vencimento é obrigatória");
+      return;
+    }
+
+    // Criar data em UTC para evitar problemas de timezone
+    const [year, month, day] = dueDate.split('-');
+    const selectedDate = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
+    const today = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
+
+    if (selectedDate < today) {
+      setError("A data de vencimento não pode ser menor que hoje");
+      return;
+    }
+
     setSaving(true);
     setError("");
 
@@ -290,7 +416,7 @@ function TaskModal({
           title,
           description,
           status,
-          dueDate: dueDate || null,
+          dueDate: new Date(dueDate + "T00:00:00Z").toISOString(),
         }),
       });
 
