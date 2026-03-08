@@ -1,7 +1,7 @@
 import React from "react";
 
 interface CardProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   title?: string;
   subtitle?: string;
   footer?: React.ReactNode;
