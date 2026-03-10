@@ -141,24 +141,17 @@ export default function Dashboard() {
               ) : (
                 <Grid cols={projects.length > 1 ? 2 : 1} gap="4">
                   {projects.map((project) => (
-                    <Card
+                    <div
                       key={project.id}
-                      title={project.name}
-                      subtitle={project.description || "Sem descrição"}
-                      footer={
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => router.push(`/projects/${project.id}`)}
-                        >
-                          Abrir Projeto →
-                        </Button>
-                      }
+                      onClick={() => router.push(`/projects/${project.id}`)}
+                      style={{ cursor: "pointer" }}
                     >
-                      <p style={{ marginBottom: 0 }}>
-                        Clique no botão abaixo para acessar o quadro de tarefas.
-                      </p>
-                    </Card>
+                      <Card
+                        title={project.name}
+                        subtitle={project.description || "Sem descrição"}
+                      >
+                      </Card>
+                    </div>
                   ))}
                 </Grid>
               )}

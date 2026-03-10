@@ -10,7 +10,7 @@ import { isAuthenticated } from "./middlewares/isAuthenticated";
 import { CreateProjectController } from "./controllers/project/CreateProjectController";
 import { createProjectSchema } from "./schemas/projectSchema";
 import { CreateTaskController } from "./controllers/task/CreateTaskController";
-import { createTaskSchema } from "./schemas/taskSchema";
+import { createTaskSchema, updateTaskSchema } from "./schemas/taskSchema";
 import { ListProjectsController } from "./controllers/project/ListProjectsController";
 import { ListTasksController } from "./controllers/task//ListTaskController";
 import { UpdateTaskController } from "./controllers/task/UpdateTaskController";
@@ -26,7 +26,7 @@ router.post("/projects", isAuthenticated, validateSchema(createProjectSchema), n
 router.get("/projects", isAuthenticated, new ListProjectsController().handle);
 router.get("/tasks", isAuthenticated,new ListTasksController().handle);
 router.post("/tasks", isAuthenticated, validateSchema(createTaskSchema), new CreateTaskController().handle)
-router.put("/tasks/:id", isAuthenticated, new UpdateTaskController().handle);
+router.put("/tasks/:id", isAuthenticated, validateSchema(updateTaskSchema), new UpdateTaskController().handle);
 router.delete("/tasks/:id", isAuthenticated, new DeleteTaskController().handle);
 
 

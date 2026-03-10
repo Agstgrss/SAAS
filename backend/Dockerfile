@@ -6,7 +6,7 @@ COPY package*.json ./
 
 RUN npm install
 
-RUN apk update && apk add nano
+RUN apk add --no-cache nano
 
 COPY . .
 
