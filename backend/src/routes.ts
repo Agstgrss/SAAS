@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { CreateUserController } from "./controllers/user/CreateUserController"
 import { CreateTenantController } from "./controllers/tenant/CreateTenantController"
+import { ListTenantsController } from "./controllers/tenant/ListTenantsController"
 import { AuthUserController } from "./controllers/user/AuthUserController"
 import { validateSchema } from "./middlewares/validateSchema";
 import { authUserSchema, createUserSchema } from "./schemas/userSchema";
@@ -20,6 +21,7 @@ const router = Router();
 
 router.post("/users", validateSchema(createUserSchema), new CreateUserController().handle)
 router.post("/tenants", validateSchema(createTenantSchema),new CreateTenantController().handle);
+router.get("/tenants", new ListTenantsController().handle);
 router.post("/session", validateSchema(authUserSchema), new AuthUserController().handle)
 router.get("/me", isAuthenticated, new DetailUserController().handle)   
 router.post("/projects", isAuthenticated, validateSchema(createProjectSchema), new CreateProjectController().handle)
