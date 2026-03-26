@@ -65,7 +65,7 @@ export default function Register() {
         justifyContent: "center",
         minHeight: "100vh",
         padding: "var(--spacing-4)",
-        backgroundColor: "var(--color-gray-50)",
+        backgroundColor: "var(--color-success)",
       }}>
         <Container size="sm">
           <FormCard

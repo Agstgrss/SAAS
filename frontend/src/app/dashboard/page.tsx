@@ -134,7 +134,7 @@ export default function Dashboard() {
               <h2>Seus Projetos</h2>
               {projects.length === 0 ? (
                 <Card>
-                  <p style={{ textAlign: "center", color: "var(--color-gray-500)" }}>
+                  <p style={{ textAlign: "center", color: "var(--color-success)" }}>
                     Nenhum projeto criado ainda. Crie um novo projeto acima!
                   </p>
                 </Card>

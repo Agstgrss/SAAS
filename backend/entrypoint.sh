@@ -1,3 +1,4 @@
+#!/bin/sh
 set -e
 
 DB_HOST=${DB_HOST:-db}
@@ -10,10 +11,7 @@ while ! nc -z $DB_HOST $DB_PORT; do
 done
 
 echo "Postgres disponível! Rodando migrations..."
-
-# Rodar migrations
 npx prisma migrate deploy
 
-# Iniciar servidor Node
 echo "Iniciando backend..."
 npm run dev
