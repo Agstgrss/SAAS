@@ -17,4 +17,4 @@ RUN chmod +x entrypoint.sh
 
 EXPOSE 3333
 
-CMD ["./entrypoint.sh"]
+CMD ["/bin/sh", "./entrypoint.sh"]

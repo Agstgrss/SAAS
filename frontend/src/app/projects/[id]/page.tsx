@@ -355,7 +355,7 @@ function Column({
                 <p style={{
                   margin: "var(--spacing-2) 0 0 0",
                   fontSize: "var(--font-size-sm)",
-                  color: "var(--color-gray-500)",
+                  color: "var(--color-success)",
                 }}>
                   📅 {formatDate(task.dueDate)}
                 </p>
