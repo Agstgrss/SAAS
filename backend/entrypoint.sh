@@ -11,7 +11,12 @@ while ! nc -z $DB_HOST $DB_PORT; do
 done
 
 echo "Postgres disponível! Rodando migrations..."
+sleep 2
 npx prisma migrate deploy
+
+echo "Rodando seed..."
+sleep 1
+npx prisma db seed
 
 echo "Iniciando backend..."
 npm run dev

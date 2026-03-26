@@ -23,10 +23,12 @@ export default function Register() {
   useEffect(() => {
     async function loadTenants() {
       try {
+        console.log("Carregando tenants...");
         setTenantsLoading(true);
         const data = await getTenants();
         setTenants(data);
       } catch (err: any) {
+        console.log("erro tenants...");
         setTenantsError(err.message || "Erro ao carregar tenants");
       } finally {
         setTenantsLoading(false);

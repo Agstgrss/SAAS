@@ -309,7 +309,7 @@ Orquestra 3 serviços:
 #### 1. Database (PostgreSQL 15)
 ```yaml
 - Container: saas_db
-- Porta: 5433:5432
+- Porta: 5432:5432
 - Credenciais: postgres / as45sd56
 - Database: saas_db
 - Volume: postgres_data (persistência)
@@ -749,7 +749,7 @@ PostgreSQL (Docker):
 - Usuário: postgres
 - Senha: as45sd56
 - Banco: saas_db
-- Porta: 5433
+- Porta: 5432
 
 Backend: http://localhost:3333
 Frontend: http://localhost:3000
