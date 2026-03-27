@@ -6,15 +6,14 @@ COPY package*.json ./
 
 RUN npm install
 
-RUN apk add --no-cache nano
+RUN apk add --no-cache nano bash curl netcat-openbsd
 
 COPY . .
 
 RUN npx prisma generate
 
-COPY entrypoint.sh ./
-RUN chmod +x entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
 EXPOSE 3333
 
-CMD ["/bin/sh", "./entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
