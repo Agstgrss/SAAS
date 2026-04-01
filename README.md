@@ -2,6 +2,8 @@
 
 Aplicação fullstack inspirada no modelo Jira/Scrum com dashboard de projetos, quadro Kanban e autenticação multi‑tenant.
 
+está online na AWS em http://3.142.131.143:3000/login
+
 ## 📦 Visão geral
 
 - **Backend:** API REST em Express + TypeScript com Prisma para acessar PostgreSQL. Cada usuário pertence a um tenant (empresa) e só vê projetos/tarefas do próprio workspace.
